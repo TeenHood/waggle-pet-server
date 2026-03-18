@@ -261,3 +261,41 @@ Write a natural dog-like roleplay reaction in JSON.
 app.listen(PORT, () => {
   console.log(`WAGGLE PET SERVER running on port ${PORT}`);
 });
+// ===============================
+// LINK DOG WITH CODE
+// ===============================
+const linkCodes = new Map();
+
+app.post("/dog/create-link", (req, res) => {
+  const { dog_id } = req.body;
+
+  const code = Math.floor(10000 + Math.random() * 90000).toString();
+
+  linkCodes.set(code, dog_id);
+
+  res.json({
+    code: code
+  });
+});
+
+app.post("/dog/link", (req, res) => {
+  const { code } = req.body;
+
+  if (!linkCodes.has(code)) {
+    return res.status(404).json({ error: "Invalid code" });
+  }
+
+  const dog_id = linkCodes.get(code);
+  const state = dogs.get(dog_id);
+
+  if (!state || !state.profile) {
+    return res.status(404).json({ error: "Dog not found" });
+  }
+
+  linkCodes.delete(code);
+
+  res.json({
+    dog_id: dog_id,
+    profile: state.profile
+  });
+});
